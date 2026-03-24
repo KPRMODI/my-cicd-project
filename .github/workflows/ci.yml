@@ -1,24 +1,29 @@
 name: CI
-on: [push, pull_request]
+
+on: [push, pull_request] # trigger on every push and every PR
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # fresh VM for every run
     steps:
-      - uses: actions/checkout@v4
-      
-      - uses: actions/setup-python@v5
-        with: 
+      # Clone repo at the triggering commit SHA
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Install Python 3.12 on the runner
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
           python-version: '3.12'
-          
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install flake8 pytest pytest-cov
-          
+
+      # Install all project dependencies
+      - name: Install
+        run: pip install -r requirements.txt
+
+      # Lint — fail immediately on style errors
       - name: Lint
         run: flake8 src/ tests/
-        
+
+      # Run tests, skip external, require ≥80% coverage
       - name: Test
         run: pytest -x -m "not external" --cov=src --cov-fail-under=80
-        
